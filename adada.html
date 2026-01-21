@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$Duwa 1700</title>
+    <style>
+        /* --- 基本設定 --- */
+        :root {
+            --primary: #14F195;
+            --bg-dark: #09090b;
+            --card-bg: #18181b;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0%, #1a2e24 0%, var(--bg-dark) 60%);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden; /* 横スクロール防止 */
+        }
+
+        /* --- スクロールアニメーション用クラス --- */
+        /* 初期状態：少し下にあり、透明 */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        /* 表示状態：元の位置に戻り、不透明に */
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- 言語切り替えロジック (CSS) --- */
+        html[lang="ja"] .lang-en { display: none; }
+        html[lang="en"] .lang-jp { display: none; }
+
+        /* --- 言語スイッチャー --- */
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .lang-btn.active {
+            background-color: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* --- レイアウト --- */
+        .container {
+            width: 100%;
+            max-width: 640px;
+            padding: 60px 20px 40px;
+            text-align: center;
+        }
+
+        /* --- 画像リンク --- */
+        .hero-link {
+            display: inline-block;
+            margin-bottom: 24px;
+            transition: transform 0.2s ease, opacity 0.2s;
+            text-decoration: none;
+        }
+
+        .hero-link:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .hero-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(20, 241, 149, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            background-color: #222;
+        }
+
+        /* --- タイポグラフィ --- */
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #bbb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            font-weight: 400;
+        }
+
+        /* --- ボタン --- */
+        .btn-pump {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary);
+            color: #000;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 16px 32px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(20, 241, 149, 0.4);
+            margin-bottom: 40px;
+        }
+
+        .btn-pump:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.6);
+            background-color: #fff;
+        }
+
+        /* --- CAエリア --- */
+        .ca-container {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 48px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+
+        .ca-container:hover {
+            border-color: var(--primary);
+        }
+
+        .ca-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .ca-address {
+            font-family: 'SF Mono', 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--primary);
+            word-break: break-all;
+        }
+
+        .copy-tooltip {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .ca-container.copied .copy-tooltip {
+            opacity: 1;
+        }
+
+        /* --- コンテンツカード --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .card p {
+            margin: 0;
+            color: #d4d4d8;
+            line-height: 1.7;
+        }
+
+        /* --- YouTube Link Card (エラー対策版) --- */
+        .youtube-link-card {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        
+        .youtube-link-card:hover {
+            border-color: #ff0000;
+            transform: translateY(-2px);
+        }
+
+        .yt-icon {
+            font-size: 2rem;
+            color: #ff0000;
+            margin-right: 15px;
+        }
+
+        .yt-text {
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .yt-text h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .yt-text p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .yt-button {
+            background-color: #ff0000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .yt-button:hover {
+            transform: scale(1.05);
+            background-color: #cc0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+
+        footer {
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding-bottom: 40px;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.2rem; }
+            .hero-image { width: 160px; height: 160px; }
+            .card { padding: 24px; }
+            .lang-switch { top: 15px; right: 15px; }
+            
+            .youtube-link-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            .yt-text { text-align: center; }
+            .yt-icon { margin-right: 0; }
+        }
+    </style>
+</head>
+<body lang="ja">
+
+    <div class="lang-switch">
+        <button class="lang-btn active" id="btn-jp" onclick="setLanguage('ja')">JP</button>
+        <button class="lang-btn" id="btn-en" onclick="setLanguage('en')">EN</button>
+    </div>
+
+    <div class="container">
+        <div class="animate-on-scroll">
+            <a href="#" target="_blank" class="hero-link">
+                <img src="https://cdn.discordapp.com/attachments/1332973701867634765/1463668799558651957/2026-01-22_075708.png?ex=6972ab4b&is=697159cb&hm=238de5a39698da1e6bbd534260f8ac4faa67480bae1574129e6b1a49d282f714&" alt="$Duwa 1700" class="hero-image" onerror="this.style.background='#333'">
+            </a>
+        </div>
+
+        <div class="animate-on-scroll">
+            <h1>$Duwa 1700</h1>
+            <p class="subtitle">Official Duwa 1700 Coin</p>
+        </div>
+
+        <div class="animate-on-scroll">
+            <a href="#" class="btn-pump">Buy on Pump.fun</a>
+        </div>
+
+        <div class="ca-container animate-on-scroll" onclick="copyCA(this)">
+            <span class="copy-tooltip">COPIED!</span>
+            <span class="ca-label">CA (CLICK TO COPY)</span>
+            <span class="ca-address" id="ca-text">ComingSoon...PumpFunContractAddressHere...</span>
+        </div>
+
+        <div class="card animate-on-scroll">
+            <h2>Concept</h2>
+            
+            <p class="lang-jp">
+                Duwa 1700 Coinを作成した理由は単純だ。これは素晴らしいミームであるにも関わらず、他の作成者のコインはどれもまともに運営されていなかったからだ。<br><br>
+                我々は本物のコミュニティのために、このコインを正しく導く。
+            </p>
+            
+            <p class="lang-en">
+                The reason for creating Duwa 1700 Coin is simple. Despite it being a fantastic meme, other coins created by others were not being managed properly.<br><br>
+                We are here to lead this coin correctly for the true community.
+            </p>
+        </div>
+
+        <div class="card animate-on-scroll">
+            <h2>Story</h2>
+
+            <p class="lang-jp">
+                「Duwa 1700」は日本発のミームコインだ。<br>
+                動画の中で「Duwa 1700!!」と絶叫するその人物は、1700系という電車が来たことへの純粋な喜びを爆発させているだけなのだ。<br><br>
+                その圧倒的な熱量こそが、我々の象徴である。
+            </p>
+
+            <p class="lang-en">
+                "Duwa 1700" is a meme coin originating from Japan.<br>
+                The person shouting "Duwa 1700!!" in the video is simply exploding with pure joy at the arrival of the 1700 series train.<br><br>
+                That overwhelming passion is our symbol.
+            </p>
+
+            <div class="youtube-link-card">
+                <div class="yt-icon">▶</div>
+                <div class="yt-text">
+                    <h3>WATCH THE MEME</h3>
+                    <p>Origin of Duwa 1700</p>
+                </div>
+                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="yt-button">
+                    Open YouTube
+                </a>
+            </div>
+        </div>
+
+        <footer class="animate-on-scroll">
+            &copy; 2024 $Duwa 1700. All Rights Reserved.
+        </footer>
+    </div>
+
+    <script>
+        // --- 言語切り替え機能 ---
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.body.lang = lang;
+
+            const btnJp = document.getElementById('btn-jp');
+            const btnEn = document.getElementById('btn-en');
+
+            if (lang === 'ja') {
+                btnJp.classList.add('active');
+                btnEn.classList.remove('active');
+            } else {
+                btnJp.classList.remove('active');
+                btnEn.classList.add('active');
+            }
+        }
+
+        // --- CAコピー機能 ---
+        function copyCA(element) {
+            const caText = document.getElementById("ca-text").innerText;
+            
+            navigator.clipboard.writeText(caText).then(() => {
+                element.classList.add('copied');
+                setTimeout(() => {
+                    element.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy failed', err);
+            });
+        }
+
+        // --- スクロールアニメーション (Intersection Observer) ---
+        document.addEventListener("DOMContentLoaded", function() {
+            // 要素が画面の10%見えたらアニメーション開始
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // 画面に入ったら .is-visible クラスを付与
+                        entry.target.classList.add('is-visible');
+                        // 一度表示されたら監視を終了（何度もフワフワしないようにする）
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // .animate-on-scroll クラスがついている全要素を監視対象にする
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            animatedElements.forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
